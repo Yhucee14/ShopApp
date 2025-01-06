@@ -36,8 +36,8 @@ const Home = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="container mx-auto">
-      <header className="flex justify-between items-center py-8 px-8">
+    <div className="container bg-gradient-to-r from-gray-100 to-gray-100">
+      <header className="flex justify-between items-center py-8 px-2">
         <div className="flex justify-center items-center">
           <h1 className="font-bold text-3xl">ShopApp</h1>
         </div>
@@ -67,7 +67,7 @@ const Home = () => {
 
       <div>
         {products ? (
-          <div className="grid xx:grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+          <div className="grid xx:grid-cols-1 ss:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
             {products.map((product) => (
               <div
                 id={product.id}
@@ -75,9 +75,9 @@ const Home = () => {
               >
                 <div>
                   <img
-                    src={product.imgUrl}
+                    src={product.imageUrl}
                     alt={product.name}
-                    className="w-full h-40 object-cover border mb-4 rounded-md"
+                    className="w-full h-full object-cover border mb-4 rounded-md"
                   />
                   <div className="font-medium text-lg">{product.name}</div>
                   <div className="text-gray-600">N{product.price}</div>
