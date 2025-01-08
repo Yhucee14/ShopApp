@@ -5,20 +5,20 @@ import Rating from "../components/Rating";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchProducts = async () => {
-    const productsRef = collection(db, 'products');
-    const snapshot = await getDocs(productsRef);
-    return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}))
-}
+  const productsRef = collection(db, "products");
+  const snapshot = await getDocs(productsRef);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
 
 const Home = () => {
-    const {data: products, isLoading, isError} = useQuery({
-        queryKey: ['products'],
-        queryFn: fetchProducts,
-    });
-
-
-  if (isLoading) return <p>Loading products...</p>;
-  if (isError) return <p>Failed to fetch products.</p>;
+  const {
+    data: products,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+  });
 
   return (
     <div className=" w-full bg-gradient-to-r px-2 md:px-4 from-gray-100 to-gray-100">
@@ -50,37 +50,43 @@ const Home = () => {
         </div>
       </header>
 
-      <div>
-        {products ? (
-          <div className="grid xx:grid-cols-1 ss:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-            {products.map((product) => (
-              <div
-                id={product.id}
-                className="border p-4 rounded-lg shadow-sm hover:shadow-md"
-              >
-                <div>
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover border mb-4 rounded-md"
-                  />
-                  <div className="font-medium text-lg">{product.name}</div>
-                  <div className="text-gray-600">N{product.price}</div>
-                  <Rating rating={product.rating} />
-                  <button
-                    // onClick={() => dispatch(cartActions.addToCart(product))}
-                    className="bg-[#1D1D1D] text-[#E4E7E9] py-1 px-2 font-medium hover:bg-[#E4E7E9] hover:text-[#1D1D1D] rounded-lg"
-                  >
-                    Add to cart
-                  </button>
+      {isLoading ? (
+        <p className="text-center py-8">Loading products...</p>
+      ) : isError ? (
+        <p className="text-center py-8">Failed to fetch products.</p>
+      ) : (
+        <div>
+          {products ? (
+            <div className="grid xx:grid-cols-1 ss:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="border flex flex-col justify-between gap-2 p-4 rounded-lg shadow-sm hover:shadow-md"
+                >
+                  <div>
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover border mb-4 rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="font-medium text-lg">{product.name}</div>
+                    <div className="text-gray-600">N{product.price}</div>
+                    <Rating rating={product.rating} />
+                    <button className="bg-[#1D1D1D] text-[#E4E7E9] py-1 px-2 font-medium hover:bg-[#E4E7E9] hover:text-[#1D1D1D] rounded-lg">
+                      Add to cart
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>No products found</div>
-        )}
-      </div>
+              ))}
+            </div>
+          ) : (
+            <div>No products found</div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
