@@ -51,7 +51,9 @@ const Home = () => {
       </header>
 
       {isLoading ? (
-        <p className="text-center py-8">Loading products...</p>
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-black border-solid border-transparent"></div>
+        </div>
       ) : isError ? (
         <p className="text-center py-8">Failed to fetch products.</p>
       ) : (
