@@ -2,41 +2,26 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import db from "../config/FirebaseConfig";
 import Rating from "../components/Rating";
+import { useQuery } from "@tanstack/react-query";
+
+const fetchProducts = async () => {
+    const productsRef = collection(db, 'products');
+    const snapshot = await getDocs(productsRef);
+    return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}))
+}
 
 const Home = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const productsRef = collection(db, "products");
-        const snapshot = await getDocs(productsRef);
-        const productsData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setProducts(productsData);
-      } catch (error) {
-        setError("Failed to fetch products. Please try again later.");
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  console.log(products);
+    const {data: products, isLoading, isError} = useQuery({
+        queryKey: ['products'],
+        queryFn: fetchProducts,
+    });
 
 
-  if (loading) return <p>Loading products...</p>;
-  if (error) return <p>{error}</p>;
+  if (isLoading) return <p>Loading products...</p>;
+  if (isError) return <p>Failed to fetch products.</p>;
 
   return (
-    <div className="container bg-gradient-to-r from-gray-100 to-gray-100">
+    <div className=" w-full bg-gradient-to-r px-2 md:px-4 from-gray-100 to-gray-100">
       <header className="flex justify-between items-center py-8 px-2">
         <div className="flex justify-center items-center">
           <h1 className="font-bold text-3xl">ShopApp</h1>
