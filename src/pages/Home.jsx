@@ -1,23 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { useState } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import db from "../config/FirebaseConfig";
 import Rating from "../components/Rating";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchProducts = async () => {
+const fetchProducts = async ({ queryKey }) => {
+    const [searchTerm] = queryKey;
   const productsRef = collection(db, "products");
-  const snapshot = await getDocs(productsRef);
+  const firebaseQuery = query(
+    productsRef,
+    where("name", ">=", searchTerm), // Start matching
+    where("name", "<=", searchTerm + "\uf8ff") // End matching (for prefix matching)
+  )
+
+  const snapshot = await getDocs(firebaseQuery);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
 };
 
 const Home = () => {
+    const [searchTerm, setSearchTerm] = useState("");
+
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", searchTerm],
     queryFn: fetchProducts,
+    keepPreviousData: true,
   });
 
   return (
@@ -31,15 +42,15 @@ const Home = () => {
           <input
             type="text"
             placeholder="Search for anything..."
-            // value={searchTerm}
-            // onChange={handleSearch}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-[#A4A4A4] focus:border-[#A4A4A4]"
           />
           <div className="absolute inset-y-0 right-2 flex p-2 items-center">
             <img
               //   src={search}
               alt="Search Icon"
-              className="h-[25px] w-[25px] bg-transparent"
+              className="h-[20px] w-[25px] bg-transparent"
               style={{ fill: "white" }}
             />
           </div>
@@ -65,7 +76,7 @@ const Home = () => {
                   key={product.id}
                   className="border flex flex-col justify-between gap-2 p-4 rounded-lg shadow-sm hover:shadow-md"
                 >
-                  <div>
+                  <div className="h-[350px]">
                     <img
                       src={product.imageUrl}
                       alt={product.name}
