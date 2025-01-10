@@ -1,34 +1,25 @@
 import { useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import db from "../config/FirebaseConfig";
 import Rating from "../components/Rating";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchProducts = async ({ queryKey }) => {
-    const [searchTerm] = queryKey;
+const fetchProducts = async () => {
   const productsRef = collection(db, "products");
-  const firebaseQuery = query(
-    productsRef,
-    where("name", ">=", searchTerm), // Start matching
-    where("name", "<=", searchTerm + "\uf8ff") // End matching (for prefix matching)
-  )
-
-  const snapshot = await getDocs(firebaseQuery);
+  const snapshot = await getDocs(productsRef);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
 };
 
+
 const Home = () => {
-    const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products", searchTerm],
+    queryKey: ["products"],
     queryFn: fetchProducts,
-    keepPreviousData: true,
   });
 
   return (
@@ -41,9 +32,9 @@ const Home = () => {
         <div className="relative w-[45%]">
           <input
             type="text"
-            placeholder="Search for anything..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search for products..."
+            // value={searchTerm}
+            // onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-[#A4A4A4] focus:border-[#A4A4A4]"
           />
           <div className="absolute inset-y-0 right-2 flex p-2 items-center">
