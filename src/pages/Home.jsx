@@ -1,31 +1,50 @@
-import { useState } from "react";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import db from "../config/FirebaseConfig";
 import Rating from "../components/Rating";
-import { useQuery } from "@tanstack/react-query";
-
-const fetchProducts = async () => {
-  const productsRef = collection(db, "products");
-  const q = query(productsRef, orderBy("createdAt", "description"), limit(4)); // Fetch latest 20 products
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-};
-
-// const fetchProducts = async () => {
-//   const productsRef = collection(db, "products");
-//   const snapshot = await getDocs(productsRef);
-//   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-// };
+import search from "../assets/search.png";
 
 const Home = () => {
-  const {
-    data: products,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProducts = products?.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  useEffect(() => {
+    const productsRef = collection(db, "products");
+    const q = query(productsRef, orderBy("createdAt", "desc"), limit(6));
+
+    // Subscribe to real-time updates
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const updatedProducts = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProducts(updatedProducts);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching products:", error);
+        setIsError(true);
+        setIsLoading(false);
+      }
+    );
+
+    // Cleanup the listener when component unmounts
+    return () => unsubscribe();
+  }, []);
 
   return (
     <div className=" w-full bg-gradient-to-r px-2 md:px-4 from-gray-100 to-gray-100">
@@ -38,15 +57,15 @@ const Home = () => {
           <input
             type="text"
             placeholder="Search for products..."
-            // value={searchTerm}
-            // onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-[#A4A4A4] focus:border-[#A4A4A4]"
           />
           <div className="absolute inset-y-0 right-2 flex p-2 items-center">
             <img
-              //   src={search}
+              src={search}
               alt="Search Icon"
-              className="h-[20px] w-[25px] bg-transparent"
+              className="h-5 w-5 bg-transparent"
               style={{ fill: "white" }}
             />
           </div>
@@ -67,12 +86,12 @@ const Home = () => {
         <div>
           {products ? (
             <div className="grid xx:grid-cols-1 ss:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <div
                   key={product.id}
                   className="border flex flex-col justify-between gap-2 p-4 rounded-lg shadow-sm hover:shadow-md"
                 >
-                  <div className="h-[350px]">
+                  <div className="h-[320px]">
                     <img
                       src={product.imageUrl}
                       alt={product.name}
@@ -81,9 +100,14 @@ const Home = () => {
                   </div>
 
                   <div>
-                    <div className="font-medium text-lg">{product.name}</div>
+                    <div className="font-medium capitalize text-lg">
+                      {product.name}
+                    </div>
                     <div className="text-gray-600">N{product.price}</div>
-                    <Rating rating={product.rating} />
+                    <div className="py-1">
+                      <Rating rating={product.rating} />
+                    </div>
+
                     <button className="bg-[#1D1D1D] text-[#E4E7E9] py-1 px-2 font-medium hover:bg-[#E4E7E9] hover:text-[#1D1D1D] rounded-lg">
                       Add to cart
                     </button>

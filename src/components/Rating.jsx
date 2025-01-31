@@ -1,27 +1,48 @@
-import React from "react";
+import { useState } from "react";
+import { CIcon } from "@coreui/icons-react";
+import { cilStar, cilStarHalf, cilStar as cilStarOutline } from "@coreui/icons";
 
-const Rating = ({ rating = 0, total = 5 }) => {
-  // Ensure rating is within valid bounds
-  const validRating = Math.max(0, Math.min(total, Math.round(rating)));
-  const filledStars = validRating; // Number of filled stars
-  const emptyStars = total - filledStars; // Number of empty stars
+const Rating = () => {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+
+  const handleClick = (value) => setRating(value);
+  const handleMouseEnter = (value) => setHover(value);
+  const handleMouseLeave = () => setHover(0);
 
   return (
-    <div className="flex items-center text-yellow-600 space-x-1">
-      {Array(filledStars)
-        .fill(null)
-        .map((_, index) => (
-          <span key={`filled-${index}`} className="text-lg">
-            ★
-          </span>
-        ))}
-      {Array(emptyStars)
-        .fill(null)
-        .map((_, index) => (
-          <span key={`empty-${index}`} className="text-lg text-gray-400">
-            ☆
-          </span>
-        ))}
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => {
+        const fullStar = hover >= star || rating >= star;
+        const halfStar = hover >= star - 0.5 || rating >= star - 0.5;
+
+        return (
+          <div
+            key={star}
+            className="relative w-6 h-6 cursor-pointer"
+            onMouseLeave={handleMouseLeave}
+          >
+            {/* Left Half-Star */}
+            <CIcon
+              icon={halfStar && !fullStar ? cilStarHalf : cilStarOutline}
+              className={`absolute left-0 w-6 h-5 ${
+                halfStar ? "text-yellow-500" : "text-gray-400"
+              }`}
+              onClick={() => handleClick(star - 0.5)}
+              onMouseEnter={() => handleMouseEnter(star - 0.5)}
+            />
+            {/* Right Full-Star */}
+            <CIcon
+              icon={fullStar ? cilStar : cilStarOutline}
+              className={`w-6 h-5 ${
+                fullStar ? "text-yellow-500" : "text-gray-400"
+              }`}
+              onClick={() => handleClick(star)}
+              onMouseEnter={() => handleMouseEnter(star)}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };
