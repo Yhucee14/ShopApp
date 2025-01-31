@@ -1,18 +1,23 @@
 import { useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import db from "../config/FirebaseConfig";
 import Rating from "../components/Rating";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchProducts = async () => {
   const productsRef = collection(db, "products");
-  const snapshot = await getDocs(productsRef);
+  const q = query(productsRef, orderBy("createdAt", "description"), limit(4)); // Fetch latest 20 products
+  const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
+// const fetchProducts = async () => {
+//   const productsRef = collection(db, "products");
+//   const snapshot = await getDocs(productsRef);
+//   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+// };
 
 const Home = () => {
-
   const {
     data: products,
     isLoading,
@@ -54,7 +59,7 @@ const Home = () => {
 
       {isLoading ? (
         <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-black border-solid border-transparent"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-black border-solid border-r-transparent"></div>
         </div>
       ) : isError ? (
         <p className="text-center py-8">Failed to fetch products.</p>
